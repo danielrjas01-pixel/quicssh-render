@@ -1,0 +1,32 @@
+server:
+  # En Render no podemos usar :443 directamente
+  # Usaremos el puerto que Render asigne
+  listen: ":${PORT:-443}"
+  tls_cert: "/app/cert.pem"
+  tls_key: "/app/key.pem"
+  
+  # IMPORTANTE: QUIC sobre TCP (fallback para Render)
+  enable_quic: true
+  quic_over_tcp: true  # Modo especial para TCP
+  
+ssh:
+  # Render NO permite conectar a servicios externos SSH
+  # Usaremos SSH interno o proxy a otra ubicación
+  backend: "localhost:2222"
+  # O usar un túnel a otro servicio
+  # backend_proxy: "https://tu-ssh-real.com:22"
+  
+auth:
+  method: "token"
+  tokens:
+    - "${ACCESS_TOKEN:-default-token-change-me}"
+  
+logging:
+  level: "debug"
+  format: "json"
+  
+# Configuración especial para Render
+render:
+  # Render reinicia servicios frecuentemente
+  max_connection_duration: "5m"
+  graceful_shutdown_timeout: "30s"
