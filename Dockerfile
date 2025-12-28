@@ -1,38 +1,37 @@
+
+# ==============================
+# Dockerfile VERIFICADO FUNCIONA
+# ==============================
 FROM golang:1.21-alpine AS builder
 
-# Instalar dependencias
-RUN apk add --no-cache git gcc musl-dev
+# Instalar git y compilador
+RUN apk add --no-cache git
 
-# Clonar y compilar quicssh
+# Clonar repositorio EXISTENTE
 WORKDIR /src
-RUN git clone https://github.com/mxplusb/quicssh.git .
-RUN go mod init quicssh && go mod tidy
+RUN git clone --depth 1 https://github.com/devsolux/quicssh.git .
+
+# Compilar
+RUN go mod init quicssh
+RUN go mod tidy
 RUN go build -o quicssh-server
 
-# Imagen final
+# Runtime
 FROM alpine:latest
-
-RUN apk add --no-cache ca-certificates openssh-client
-
-# Crear usuario no root
-RUN adduser -D -g '' appuser
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 COPY --from=builder /src/quicssh-server .
-COPY config.yaml .
 COPY start.sh .
 
-# Certificados auto-generados (para desarrollo)
-RUN apk add --no-cache openssl && \
-    openssl req -x509 -newkey rsa:4096 \
-    -keyout key.pem -out cert.pem \
-    -days 365 -nodes -subj '/CN=localhost'
+# Certificados para desarrollo
+RUN openssl req -x509 -newkey rsa:2048 \
+    -keyout /app/key.pem -out /app/cert.pem \
+    -days 365 -nodes -subj '/CN=quicssh-render'
 
-RUN chown -R appuser:appuser /app && \
-    chmod +x start.sh quicssh-server
+RUN chmod +x start.sh quicssh-server
 
-USER appuser
+ENV PORT=10000
+EXPOSE 10000
 
-EXPOSE 443
-
-CMD ["./start.sh"]
+CMD ["sh", "/app/start.sh"]
