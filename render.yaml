@@ -1,27 +1,19 @@
+
+# Si NO tienes render.yaml, créalo:
+cat > render.yaml << 'EOF'
 services:
   - type: web
-    name: quicssh-tunnel
+    name: chisel-tunnel
     env: docker
-    plan: free  # o starter para más recursos
+    plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
     envVars:
+      - key: AUTH_TOKEN
+        generateValue: true
       - key: RENDER
-        value: true
-      - key: DOMAIN
-        sync: false  # Cambiar después
+        value: "true"
     healthCheckPath: /health
     numInstances: 1
-    domains:
-      - key: custom
-        name: quicssh-tunnel.onrender.com  # Dominio temporal
-    
-    # Configuración específica de Render
     autoDeploy: true
-    pullRequestPreviewsEnabled: false
-    
-    # Recursos (FREE tier límites)
-    disk:
-      name: data
-      mountPath: /data
-      sizeGB: 1
+EOF
