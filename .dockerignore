@@ -1,0 +1,11 @@
+cat > .dockerignore << 'EOF'
+# Ignorar estos archivos/directorios
+.git
+.gitignore
+*.md
+README
+Dockerfile.bak
+*.tmp
+.env
+*.log
+EOF
