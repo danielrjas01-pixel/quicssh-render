@@ -49,4 +49,3 @@ EXPOSE 10000
 
 # Comando de inicio
 CMD ["sh", "/app/start.sh"]
-EOF
