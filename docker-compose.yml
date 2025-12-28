@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  quicssh:
+    build: .
+    ports:
+      - "443:443"
+    environment:
+      - PORT=443
+      - ACCESS_TOKEN=mi-token-secreto
+      - ROOT_PASSWORD=test123
+    volumes:
+      - ./data:/data
