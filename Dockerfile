@@ -1,5 +1,5 @@
 # ESTE es el contenido CORRECTO del Dockerfile:
-cat > Dockerfile << 'EOF'
+#cat > Dockerfile << 'EOF'
 # ==========================================
 # Dockerfile para Chisel Tunnel en Render
 # ==========================================
