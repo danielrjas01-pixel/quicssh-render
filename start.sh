@@ -1,48 +1,39 @@
+cat > start.sh << 'EOF'
 #!/bin/sh
 set -e
 
-echo "Iniciando quicssh en Render..."
+echo "========================================"
+echo "🚀 CHISEL TUNNEL SERVER - RENDER"
+echo "========================================"
 
-# Generar token si no existe
-if [ -z "$ACCESS_TOKEN" ]; then
-  export ACCESS_TOKEN=$(openssl rand -hex 16)
-  echo "Token generado: $ACCESS_TOKEN"
-fi
+# Puerto (Render lo inyecta automáticamente)
+PORT=${PORT:-10000}
 
-# Render asigna puerto dinámico
-if [ -z "$PORT" ]; then
-  export PORT=10000
-fi
+# Token de autenticación (generar si no existe)
+AUTH_TOKEN=${AUTH_TOKEN:-$(openssl rand -hex 16)}
 
-# Crear configuración dinámica
-cat > /app/config-render.yaml << EOF
-server:
-  listen: ":$PORT"
-  tls_cert: "/app/cert.pem"
-  tls_key: "/app/key.pem"
-  enable_quic: true
-  quic_over_tcp: true
-  
-ssh:
-  backend: "localhost:2222"
-  
-auth:
-  tokens:
-    - "$ACCESS_TOKEN"
-    
-web:
-  enabled: true
-  port: 8080
-  path: "/health"
+# Mostrar información de conexión
+echo "🔧 CONFIGURACIÓN:"
+echo "   🔌 Puerto: $PORT"
+echo "   🔑 Token: $AUTH_TOKEN"
+echo "   🌍 URL: https://$(hostname):$PORT"
+echo ""
+echo "📋 COMANDO PARA CLIENTE:"
+echo "   ./chisel client --auth user:$AUTH_TOKEN \\"
+echo "     https://$(hostname):$PORT \\"
+echo "     R:localhost:2222:localhost:22"
+echo "========================================"
+
+# Iniciar Chisel Server
+exec ./chisel-server server \
+  --port "$PORT" \
+  --auth "user:$AUTH_TOKEN" \
+  --key "/app/key.pem" \
+  --cert "/app/cert.pem" \
+  --reverse \
+  --socks5 \
+  --keepalive 30s
 EOF
 
-# Iniciar SSH interno (solo para prueba)
-echo "Iniciando SSH de prueba..."
-ssh-keygen -A
-echo "root:${ROOT_PASSWORD:-password123}" | chpasswd
-/usr/sbin/sshd -p 2222 -D -e &
-SSHD_PID=$!
-
-# Iniciar quicssh
-echo "Iniciando quicssh en puerto $PORT..."
-exec ./quicssh-server --config /app/config-render.yaml
+# Hacer ejecutable
+chmod +x start.sh
